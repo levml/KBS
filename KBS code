@@ -1,0 +1,72 @@
+#-------Clans functions by Ben---------
+#This method builds the list of all clans consisting of p +'s and q -'s, using a recursion.
+def findAllPMClans(p,q):
+    clanList = []
+    if p == 0:
+        clanList.append(q * "-")
+    elif q == 0:
+        clanList.append(p * "+")
+    else:
+        for cl in findAllPMClans(p-1,q):
+            clanList.append("+" + cl)
+        for cl in findAllPMClans(p,q-1):
+            clanList.append("-" + cl)
+
+    return clanList
+    
+    
+#-------Polytope functions-------
+
+#Given a polytope P it returns a list with the edge directions at each vertex
+def edgedir(P):
+    I=[] 
+    i=0
+    for vertex1 in P.Vrepresentation():
+        I.append([])
+        for vertex2 in vertex1.neighbors():
+            I[i].append(matrix(list(vertex2))-matrix(list(vertex1)))
+        i+=1
+    return I
+    
+    
+#-------BS moment poly functions-------
+
+#Given a word Q it returns the list of the moment map image of the T-fixed points
+#This is a slow function because it considers all 2^k subwords of Q
+def moment(W,S,Q,n):
+    m=len(Q)
+    tfix=(Subsets(range(m), submultiset=True)).list()
+    L = W.domain()
+    fw = L.fundamental_weights()
+    sumfw=sum(fw.values())
+    m=len(Q)
+    points=[]
+    for J in tfix:
+        prod=S[1]*S[1]
+        for j in range(m):
+            if j in J:
+                prod*=S[Q[j]]
+            if j==0:
+                mat=(prod).action(fw[Q[j]])
+            else:
+                mat=mat+(prod).action(fw[Q[j]])
+        points.append(mat+sumfw)
+        #points.append(mat)
+    return points
+    
+    
+#-------KBS moment poly fcts-------
+
+#Given an element w and a list of points P it returns wP
+def waction(w,P,n):
+    wpoints=[w.action(p) for p in P]
+    return wpoints
+
+#Given elements u≤w and a list of points P, it returns a list consisting of v^{-1}P for u≤v≤w
+def lesswaction(u,w,P,n,W,S):
+    wpoints=[]
+    for v in W.bruhat_interval(u,w):
+        vinverse=v.inverse()
+        for p in P:
+            wpoints.append(vinverse.action(p))
+    return wpoints
